@@ -1,27 +1,102 @@
+# DevOps CI/CD Pipeline with Terraform, Jenkins, and Docker
 
-# End-to-End CI/CD Pipeline using Terraform, Jenkins, Docker, and AWS
+This project demonstrates a complete DevOps CI/CD pipeline for a Flask application using Terraform, Jenkins, Docker, and AWS.
 
-This project demonstrates how to provision infrastructure with Terraform, deploy an application using Docker, and manage the pipeline using Jenkins. It reflects a real-world CI/CD implementation suitable for enterprise DevOps workflows.
+## Architecture Overview
 
-## 📂 Folder Structure
-- **terraform/**: Provisions EC2 instance, security groups, and necessary infrastructure
-- **jenkins/**: Jenkinsfile defining pipeline stages (checkout, build, test, deploy)
-- **docker/**: Dockerfile to containerize a sample app
-- **app/**: Sample application source code
-- **scripts/**: Shell scripts used during provisioning or deployments
-- **docs/**: Logs, architecture diagrams, and Terraform outputs
+```
++-------------------+         +-------------------+         +-------------------+
+|                   |         |                   |         |                   |
+|   Developer PC    +-------->+   GitHub Repo     +-------->+   Jenkins Server  |
+|                   |  Push   | (Source Code)     |  Pull   | (on AWS EC2)      |
++-------------------+         +-------------------+         +-------------------+
+                                                                  |
+                                                                  | Builds Docker Image
+                                                                  v
+                                                        +-------------------+
+                                                        |                   |
+                                                        |   DockerHub       |
+                                                        | (Image Registry)  |
+                                                        +-------------------+
+                                                                  |
+                                                                  | Pulls Image
+                                                                  v
+                                                        +-------------------+
+                                                        |                   |
+                                                        |   EC2 App Server  |
+                                                        | (Deployed via     |
+                                                        |  Terraform)       |
+                                                        +-------------------+
+                                                                  |
+                                                                  | Runs Container
+                                                                  v
+                                                        +-------------------+
+                                                        |                   |
+                                                        |   Flask App       |
+                                                        |   (app.py)        |
+                                                        +-------------------+
+```
 
-## 🚀 Pipeline Flow
-1. **Terraform** provisions EC2 on AWS with correct security group and IAM roles.
-2. Jenkins agent (on EC2) triggers pipeline on code commit.
-3. Code is pulled, built into a Docker image, and tested.
-4. Docker image is pushed to Docker Hub.
-5. Image is deployed on the provisioned EC2 instance.
+## Project Structure
 
-## 🛠 Tools Used
+```
+.
+├── app/                # Flask application code (app.py)
+├── docker/             # Dockerfile for building the app image
+├── jenkins/            # Jenkinsfile for CI/CD pipeline
+├── scripts/            # Deployment scripts (deploy.sh)
+└── terraform/          # Terraform IaC (main.tf, variables.tf)
+```
+
+## Getting Started
+
+### 1. Infrastructure Setup
+
+- Edit `terraform/variables.tf` to set your AWS region, AMI, instance type, and SSH key.
+- Run Terraform to provision resources:
+  ```bash
+  cd terraform
+  terraform init
+  terraform apply
+  ```
+
+### 2. Jenkins Setup
+
+- Access Jenkins on the provisioned EC2 instance (port 8080).
+- Configure credentials for DockerHub in Jenkins.
+- Use the provided `jenkins/Jenkinsfile` for your pipeline.
+
+### 3. Build & Deploy
+
+- On code push, Jenkins will:
+  - Build and test the Docker image.
+  - Push the image to DockerHub.
+  - SSH into the app server and run `deploy.sh` to update the running container.
+
+### 4. Access the Application
+
+- The Flask app will be available on the app server’s public IP (port 80).
+
+## Files of Interest
+
+- `app/app.py` - Main Flask application.
+- `docker/Dockerfile` - Docker build instructions.
+- `jenkins/Jenkinsfile` - Jenkins pipeline definition.
+- `scripts/deploy.sh` - Deployment script for the app server.
+- `terraform/main.tf` & `terraform/variables.tf` - Infrastructure as Code.
+
+## Requirements
+
+- AWS account and credentials
 - Terraform
-- Jenkins
 - Docker
-- AWS EC2
-- Shell scripting
-- GitHub
+- Jenkins
+- Python 3.x
+
+## License
+
+MIT
+
+---
+
+**Author:** Venkata Sai Tirumala Naidu Thumati
